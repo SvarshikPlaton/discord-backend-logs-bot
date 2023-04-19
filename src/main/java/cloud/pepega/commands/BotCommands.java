@@ -14,62 +14,107 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class BotCommands extends ListenerAdapter {
+    private String resolveInversionOption(SlashCommandInteractionEvent event) {
+        var inversionOption = event.getOption("inversion");
+        String inversion = "";
+        if (inversionOption == null) {
+            inversion = "-r";
+        } else if (inversionOption.getAsBoolean()) {
+            inversion = "-r";
+        }
+        return inversion;
+    }
+
+    private String resolveDatetimeOption(SlashCommandInteractionEvent event) {
+        var datetimeOption = event.getOption("datetime");
+        String datetime = "";
+        if (datetimeOption != null) {
+            datetime = "--since \"" + datetimeOption.getAsString() + "\"";
+        }
+        return datetime;
+    }
+
+    private int resolveRowCountOption(SlashCommandInteractionEvent event) {
+        var rowCountOption = event.getOption("rowCount");
+        int rowCount = 1000;
+        if (rowCountOption != null) {
+            rowCount = rowCountOption.getAsInt();
+            if (rowCount < 50) {
+                rowCount = 50;
+            } else if (rowCount > 32000) {
+                rowCount = 32000;
+            }
+        }
+        return rowCount;
+    }
+
+    private void sendLogsFile(String service, String inversion, String datetime, int rowCount,
+                              SlashCommandInteractionEvent event) {
+        try {
+            var pb = new ProcessBuilder(
+                    "bash", "-c", "journalctl -u " +
+                    service + " " +
+                    inversion + " " +
+                    datetime);
+            var process = pb.start();
+
+            System.out.println(String.join(" ",pb.command().toArray(new String[0])));
+
+            var reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            var byteBuffer = new ByteArrayOutputStream();
+
+            String line;
+            for (int i = 0; i < rowCount; i++) {
+                if ((line = reader.readLine()) != null) {
+                    byteBuffer.write(line.getBytes());
+                    byteBuffer.write('\n');
+                }
+                else
+                    break;
+            }
+
+            int bufferSize = byteBuffer.size();
+            if (bufferSize > 25_000_000) {
+                event.reply("File size is larger than 25 MB. Reduce number of lines in logs..").queue();
+            } else {
+                var file = FileUpload.fromData(byteBuffer.toByteArray(), "logs.txt");
+                event.replyFiles(file).queue();
+            }
+        } catch (IOException e) {
+            event.reply("Something went wrong when invoking the command..").queue();
+        }
+    }
+
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "logs" -> {
 
-                OptionMapping service = event.getOption("service-name");
-                if (service == null) {
+                var eventOption = event.getOption("service-name");
+                String service = null;
+                if (eventOption == null) {
                     event.reply("Invalid service name..").queue();
                     return;
-                }
-
-                OptionMapping inversion = event.getOption("inversion");
-                String inversionOption = "";
-                if (inversion == null) {
-                    inversionOption = "-r";
-                } else if (inversion.getAsBoolean()) {
-                    inversionOption = "-r";
-                }
-
-                OptionMapping datetime = event.getOption("datetime");
-                String datetimeOption = "";
-                if (datetime != null) {
-                    datetimeOption = "--since \"" + datetime.getAsString() + "\"";
-                }
-
-
-                try {
-//                    var pb = new ProcessBuilder(
-//                        "journalctl",
-//                        "-u", service.getAsString(),
-//                        inversionOption,
-//                        datetimeOption
-//                    );
-
-                    ProcessBuilder pb = new ProcessBuilder(
-                            "bash", "-c", "journalctl -u " +
-                            service.getAsString() + " " +
-                            inversionOption + " " +
-                            datetimeOption);
-                    Process process = pb.start();
-
-                    System.out.println(String.join(" ",pb.command().toArray(new String[0])));
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    var byteBuffer = new ByteArrayOutputStream();
-
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        byteBuffer.write(line.getBytes());
-                        byteBuffer.write('\n');
+                } else {
+                    service = eventOption.getAsString();
+                    switch (service) {
+                        case "provedcode" -> event.reply("Get logs for provencode").queue();
+                        case "starlight" -> event.reply("Get logs for starlight").queue();
+                        case "uptalentbackend" -> event.reply("Get logs for uptalentbackend").queue();
+                        case "talantino" -> event.reply("Get logs for talantino").queue();
+                        case "skillscope" -> event.reply("Get logs for skillscope").queue();
+                        default -> {
+                            event.reply("Wrong backend service name :frowning:").queue();
+                            return;
+                        }
                     }
-
-                    event.replyFiles(FileUpload.fromData(byteBuffer.toByteArray(), "logs.txt")).queue();
-                } catch (IOException e) {
-                    event.reply("Something went wrong when invoking the command..").queue();
                 }
+
+                var inversion = resolveInversionOption(event);
+                var datetime = resolveDatetimeOption(event);
+                var rowCount = resolveRowCountOption(event);
+
+                sendLogsFile(service, inversion, datetime, rowCount, event);
             }
             case "polishcat" -> {
                 event.reply("Song!").queue();
