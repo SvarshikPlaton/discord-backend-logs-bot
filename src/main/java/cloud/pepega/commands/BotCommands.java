@@ -94,17 +94,6 @@ public class BotCommands extends ListenerAdapter {
                     return;
                 } else {
                     service = eventOption.getAsString();
-                    switch (service) {
-                        case "provedcode" -> event.reply("Get logs for provencode").queue();
-                        case "starlight" -> event.reply("Get logs for starlight").queue();
-                        case "uptalentbackend" -> event.reply("Get logs for uptalentbackend").queue();
-                        case "talantino" -> event.reply("Get logs for talantino").queue();
-                        case "skillscope" -> event.reply("Get logs for skillscope").queue();
-                        default -> {
-                            event.reply("Wrong backend service name :frowning:").queue();
-                            return;
-                        }
-                    }
                 }
 
                 var inversion = resolveInversionOption(event);
