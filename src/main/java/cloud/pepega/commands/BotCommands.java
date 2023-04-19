@@ -2,6 +2,7 @@ package cloud.pepega.commands;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,7 +49,7 @@ public class BotCommands extends ListenerAdapter {
         SlashCommandInteractionEvent event
     ) {
         event.deferReply().queue();        
-
+        
         try {
             var pb = new ProcessBuilder(
                     "bash", "-c", "journalctl -u " +
@@ -75,7 +76,7 @@ public class BotCommands extends ListenerAdapter {
             System.out.println("[/logs] Response buffer size: " + byteBuffer.size() + " bytes");
             
             var file = FileUpload.fromData(byteBuffer.toByteArray(), "logs.txt");
-            event.replyFiles(file).queue();
+            event.getHook().sendFiles(file).queue();
         } catch (IOException e) {
             event.reply("Something went wrong when invoking the command..").queue();
         }
