@@ -35,8 +35,6 @@ public class BotCommands extends ListenerAdapter {
             rowCount = rowCountOption.getAsInt();
             if (rowCount < 50) {
                 rowCount = 50;
-            } else if (rowCount > 32000) {
-                rowCount = 32000;
             }
         }
         return rowCount;
@@ -59,7 +57,7 @@ public class BotCommands extends ListenerAdapter {
 
             String line;
             for (int i = 0; i < rowcount; i++) {
-                if ((line = reader.readLine()) != null) {
+                if ((line = reader.readLine()) != null && byteBuffer.size() < 24_900_000) {
                     byteBuffer.write(line.getBytes());
                     byteBuffer.write('\n');
                 }
@@ -67,13 +65,8 @@ public class BotCommands extends ListenerAdapter {
                     break;
             }
 
-            int bufferSize = byteBuffer.size();
-            if (bufferSize > 25_000_000) {
-                event.reply("File size is larger than 25 MB. Reduce number of lines in logs..").queue();
-            } else {
-                var file = FileUpload.fromData(byteBuffer.toByteArray(), "logs.txt");
-                event.replyFiles(file).queue();
-            }
+            var file = FileUpload.fromData(byteBuffer.toByteArray(), "logs.txt");
+            event.replyFiles(file).queue();
         } catch (IOException e) {
             event.reply("Something went wrong when invoking the command..").queue();
         }

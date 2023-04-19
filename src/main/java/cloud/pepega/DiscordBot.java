@@ -27,8 +27,8 @@ public class DiscordBot {
                                 "Options: True / False", false)
                         .addOption(OptionType.STRING, "datetime", "Date and time from which the logs start. " +
                                 "Option example: \"2023-04-18 00:00:00\"", false)
-                        .addOption(OptionType.INTEGER, "rowcount", "The number of log lines (default is 1,000). " +
-                                "Max: 32000 Min: 50", false)
+                        .addOption(OptionType.INTEGER, "rowcount", "The number of log lines (default is 1000). " +
+                                "Min: 50 rows. Maximum file size: 25 MB", false)
                         .queue();
                 guild.upsertCommand("polishcat", "Funny song").queue();
             }
