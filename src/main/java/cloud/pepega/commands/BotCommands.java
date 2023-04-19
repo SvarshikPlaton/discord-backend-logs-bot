@@ -65,7 +65,7 @@ public class BotCommands extends ListenerAdapter {
 
             String line;
             for (int i = 0; i < rowCount; i++) {
-                if ((line = reader.readLine()) != null && byteBuffer.size() < 20_000_000) {
+                if ((line = reader.readLine()) != null && byteBuffer.size() < 26_210_000) {
                     byteBuffer.write(line.getBytes());
                     byteBuffer.write('\n');
                 }
