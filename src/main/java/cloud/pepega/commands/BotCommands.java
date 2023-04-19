@@ -5,10 +5,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class BotCommands extends ListenerAdapter {
     private String resolveInversionOption(SlashCommandInteractionEvent event) {
@@ -103,7 +100,12 @@ public class BotCommands extends ListenerAdapter {
                 sendLogsFile(service, inversion, datetime, rowcount, event);
             }
             case "polishcat" -> {
-                event.reply("Song!").queue();
+                try {
+                    var file = new File("/var/lib/jenkins/polishcat.mp3");
+                    event.replyFiles(FileUpload.fromData(file)).queue();
+                } catch (Exception e) {
+                    event.reply("Song not found :frowning:").queue();
+                }
             }
         }
     }
