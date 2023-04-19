@@ -40,7 +40,7 @@ public class BotCommands extends ListenerAdapter {
         return rowCount;
     }
 
-    private void sendLogsFile(String service, String inversion, String datetime, int rowcount,
+    private void sendLogsFile(String service, String inversion, String datetime, int rowCount,
                               SlashCommandInteractionEvent event) {
         try {
             var pb = new ProcessBuilder(
@@ -56,14 +56,16 @@ public class BotCommands extends ListenerAdapter {
             var byteBuffer = new ByteArrayOutputStream();
 
             String line;
-            for (int i = 0; i < rowcount; i++) {
-                if ((line = reader.readLine()) != null && byteBuffer.size() < 24_900_000) {
+            for (int i = 0; i < rowCount; i++) {
+                if ((line = reader.readLine()) != null && byteBuffer.size() < 20_000_000) {
                     byteBuffer.write(line.getBytes());
                     byteBuffer.write('\n');
                 }
                 else
                     break;
             }
+
+            System.out.println(byteBuffer.size());
 
             var file = FileUpload.fromData(byteBuffer.toByteArray(), "logs.txt");
             event.replyFiles(file).queue();
