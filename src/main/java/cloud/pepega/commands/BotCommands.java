@@ -1,8 +1,7 @@
-package pepega.cloud.commands;
+package cloud.pepega.commands;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,8 +9,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class BotCommands extends ListenerAdapter {
     private String resolveInversionOption(SlashCommandInteractionEvent event) {
@@ -35,7 +32,7 @@ public class BotCommands extends ListenerAdapter {
     }
 
     private int resolveRowCountOption(SlashCommandInteractionEvent event) {
-        var rowCountOption = event.getOption("rowCount");
+        var rowCountOption = event.getOption("rowcount");
         int rowCount = 1000;
         if (rowCountOption != null) {
             rowCount = rowCountOption.getAsInt();
@@ -48,7 +45,7 @@ public class BotCommands extends ListenerAdapter {
         return rowCount;
     }
 
-    private void sendLogsFile(String service, String inversion, String datetime, int rowCount,
+    private void sendLogsFile(String service, String inversion, String datetime, int rowcount,
                               SlashCommandInteractionEvent event) {
         try {
             var pb = new ProcessBuilder(
@@ -64,7 +61,7 @@ public class BotCommands extends ListenerAdapter {
             var byteBuffer = new ByteArrayOutputStream();
 
             String line;
-            for (int i = 0; i < rowCount; i++) {
+            for (int i = 0; i < rowcount; i++) {
                 if ((line = reader.readLine()) != null) {
                     byteBuffer.write(line.getBytes());
                     byteBuffer.write('\n');
@@ -91,7 +88,7 @@ public class BotCommands extends ListenerAdapter {
             case "logs" -> {
 
                 var eventOption = event.getOption("service-name");
-                String service = null;
+                String service;
                 if (eventOption == null) {
                     event.reply("Invalid service name..").queue();
                     return;
@@ -112,9 +109,9 @@ public class BotCommands extends ListenerAdapter {
 
                 var inversion = resolveInversionOption(event);
                 var datetime = resolveDatetimeOption(event);
-                var rowCount = resolveRowCountOption(event);
+                var rowcount = resolveRowCountOption(event);
 
-                sendLogsFile(service, inversion, datetime, rowCount, event);
+                sendLogsFile(service, inversion, datetime, rowcount, event);
             }
             case "polishcat" -> {
                 event.reply("Song!").queue();
